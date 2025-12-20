@@ -3,282 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitalia - Control de Colesterol</title>
-    <!-- Tailwind CSS para el diseño -->
+    <title>Vitalia - Tu Corazón en Control</title>
+    <!-- Tailwind CSS para diseño profesional -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
+    <!-- Iconos Lucide -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js" type="module"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js" type="module"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js" type="module"></script>
-
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .action-card:active { transform: scale(0.98); }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .progress-transition { transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .tap-scale:active { transform: scale(0.97); }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 overflow-x-hidden">
+<body class="bg-slate-50 text-slate-900">
 
-    <div id="app" class="max-w-md mx-auto min-h-screen relative pb-24 shadow-2xl bg-white">
-        <!-- El contenido se inyecta vía JavaScript -->
-        <div id="loader" class="h-screen flex items-center justify-center">
-            <div class="animate-spin text-emerald-600">
-                <i data-lucide="loader-2" class="w-12 h-12"></i>
-            </div>
-        </div>
+    <div id="app" class="max-w-md mx-auto min-h-screen bg-white shadow-2xl relative pb-24">
+        <!-- El contenido se genera dinámicamente aquí -->
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // --- CONFIGURACIÓN E INICIALIZACIÓN ---
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'vitalia-github-v1';
-
-        // --- DATOS DEL PROGRAMA ---
+    <script>
+        // --- BASE DE DATOS DE SALUD (DÍAS REALES) ---
         const PROGRAM = {
             1: {
-                title: "Día 1: Despertar Metabólico",
+                title: "Despertar Metabólico",
                 ritual: "Agua tibia con medio limón",
-                ritualWhy: "Estimula la bilis para movilizar grasas hepáticas.",
+                ritualDesc: "Estimula la bilis para movilizar grasas hepáticas.",
                 breakfast: "Avena integral con Canela",
                 lunch: "Lentejas con Pimientos",
                 dinner: "Sopa de Apio y Calabacín",
                 exercise: "Caminata Moderada (25 min)",
                 challenge: "Cero Azúcar Hoy",
-                edu: "Hoy estás reseteando tu metabolismo para que tu cuerpo use el colesterol como energía."
+                edu: "Hoy tu cuerpo empieza a usar el colesterol almacenado para producir energía."
             },
             2: {
-                title: "Día 2: Protección Arterial",
-                ritual: "Té verde sin azúcar",
-                ritualWhy: "Protege las paredes internas de tus venas.",
+                title: "Limpieza Arterial",
+                ritual: "Té verde (sin azúcar)",
+                ritualDesc: "Antioxidantes que protegen tus arterias.",
                 breakfast: "Yogur con semillas de Chía",
                 lunch: "Salmón o Trucha a la plancha",
                 dinner: "Tortilla de claras con Espinacas",
                 exercise: "Subir Escaleras (10 min)",
                 challenge: "8 Vasos de Agua",
-                edu: "El agua ayuda a filtrar toxinas. Tus arterias están más elásticas hoy."
+                edu: "La hidratación es clave para que tus riñones filtren el exceso de toxinas."
+            },
+            3: {
+                title: "Poder del Omega-3",
+                ritual: "Infusión de Jengibre",
+                ritualDesc: "Reduce la inflamación sistémica.",
+                breakfast: "Tostada integral con Aguacate",
+                lunch: "Atún con ensalada verde",
+                dinner: "Crema de Verduras",
+                exercise: "Caminata Rápida (30 min)",
+                challenge: "Cero Frituras",
+                edu: "Las grasas buenas (insaturadas) barren el colesterol pegado en las paredes."
             }
-            // Se pueden añadir más días aquí
         };
 
-        let currentUser = null;
-        let profile = null;
-        let dailyLog = null;
+        // --- GESTIÓN DE DATOS ---
+        const state = {
+            profile: JSON.parse(localStorage.getItem('vitalia_profile')) || null,
+            logs: JSON.parse(localStorage.getItem('vitalia_logs')) || {}
+        };
 
-        // --- LÓGICA DE ESTADO Y RENDER ---
-
-        async function init() {
-            // Regla 3: Auth antes de cualquier operación
-            try {
-                const userCredential = await signInAnonymously(auth);
-                currentUser = userCredential.user;
-                
-                // Cargar Perfil
-                const profileRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile');
-                const profileSnap = await getDoc(profileRef);
-
-                if (!profileSnap.exists()) {
-                    renderOnboarding();
-                } else {
-                    profile = profileSnap.data();
-                    startSync();
-                }
-            } catch (error) {
-                console.error("Error de inicialización:", error);
-                document.getElementById('app').innerHTML = `<div class="p-8 text-center text-red-500">Error de conexión. Reintenta.</div>`;
-            }
+        function saveState() {
+            localStorage.setItem('vitalia_profile', JSON.stringify(state.profile));
+            localStorage.setItem('vitalia_logs', JSON.stringify(state.logs));
         }
 
-        function startSync() {
-            const todayId = new Date().toISOString().split('T')[0];
-            const logRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'dailyLogs', todayId);
-
-            // Escucha en tiempo real del progreso del día
-            onSnapshot(logRef, (snap) => {
-                if (snap.exists()) {
-                    dailyLog = snap.data();
-                    renderDashboard();
-                } else {
-                    const initialLog = { ritual: false, breakfast: false, lunch: false, dinner: false, exercise: false, challenge: false };
-                    setDoc(logRef, initialLog);
-                    dailyLog = initialLog;
-                    renderDashboard();
-                }
-            });
+        function getTodayId() {
+            return new Date().toISOString().split('T')[0];
         }
 
-        function calculateDay() {
-            const start = new Date(profile.startDate);
+        function getDayNumber() {
+            if (!state.profile) return 1;
+            const start = new Date(state.profile.startDate);
             const now = new Date();
             const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
             return diff > 0 ? diff : 1;
         }
 
         // --- COMPONENTES DE INTERFAZ ---
-
-        function renderOnboarding() {
-            const container = document.getElementById('app');
-            container.innerHTML = `
-                <div class="p-8 flex flex-col justify-center min-h-screen">
-                    <div class="text-center mb-10">
-                        <div class="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <i data-lucide="heart" class="text-emerald-600 fill-emerald-600 w-10 h-10"></i>
-                        </div>
-                        <h1 class="text-3xl font-extrabold text-slate-800">VITALIA</h1>
-                        <p class="text-slate-500 mt-2">Empieza hoy tu transformación natural.</p>
-                    </div>
-                    <form id="onboardingForm" class="space-y-6">
-                        <div class="bg-white border rounded-3xl p-6 shadow-sm">
-                            <label class="block text-sm font-bold text-slate-700 mb-2">¿Cómo te llamas?</label>
-                            <input type="text" id="userName" required class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Ej. Carlos">
-                        </div>
-                        <button type="submit" class="w-full py-5 bg-emerald-600 text-white rounded-3xl font-black text-lg shadow-xl active:scale-95 transition-all">
-                            EMPEZAR DÍA 1
-                        </button>
-                    </form>
-                </div>
-            `;
-            lucide.createIcons();
-
-            document.getElementById('onboardingForm').onsubmit = async (e) => {
-                e.preventDefault();
-                const name = document.getElementById('userName').value;
-                const newProfile = {
-                    name,
-                    startDate: new Date().toISOString(),
-                    streak: 1
-                };
-                await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile'), newProfile);
-                profile = newProfile;
-                startSync();
-            };
-        }
-
-        function renderDashboard() {
-            const dayNum = calculateDay();
-            const data = PROGRAM[dayNum] || PROGRAM[1];
-            const progress = Math.round((Object.values(dailyLog).filter(v => v === true).length / 6) * 100);
+        function render() {
+            const app = document.getElementById('app');
             
-            const container = document.getElementById('app');
-            container.innerHTML = `
+            if (!state.profile) {
+                renderOnboarding(app);
+                return;
+            }
+
+            const dayNum = getDayNumber();
+            const data = PROGRAM[dayNum] || PROGRAM[3]; // Fallback al día 3
+            const todayId = getTodayId();
+            
+            if (!state.logs[todayId]) {
+                state.logs[todayId] = { ritual: false, breakfast: false, lunch: false, dinner: false, exercise: false, challenge: false };
+                saveState();
+            }
+
+            const currentLog = state.logs[todayId];
+            const completed = Object.values(currentLog).filter(v => v).length;
+            const progress = Math.round((completed / 6) * 100);
+
+            app.innerHTML = `
                 <header class="bg-emerald-600 p-6 text-white rounded-b-[2.5rem] shadow-xl">
                     <div class="flex justify-between items-center mb-6">
                         <div>
-                            <p class="text-emerald-100 text-xs font-bold uppercase tracking-widest">Día ${dayNum}</p>
+                            <p class="text-emerald-100 text-xs font-bold uppercase tracking-widest">Día ${dayNum} de tu Plan</p>
                             <h1 class="text-2xl font-extrabold">${data.title}</h1>
                         </div>
-                        <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full border border-white/20">
+                        <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full backdrop-blur-md">
                             <i data-lucide="flame" class="w-4 h-4 text-orange-400 fill-orange-400"></i>
-                            <span class="font-bold text-sm">${profile.streak} d</span>
+                            <span class="font-bold text-sm">${state.profile.streak || 1} d</span>
                         </div>
                     </div>
-                    <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
+                    <div class="bg-white/10 p-5 rounded-3xl border border-white/20">
                         <div class="flex justify-between items-end mb-2">
-                            <span class="text-xs font-bold">Progreso de hoy</span>
-                            <span class="text-lg font-black">${progress}%</span>
+                            <span class="text-xs font-bold">Progreso Diario</span>
+                            <span class="text-xl font-black">${progress}%</span>
                         </div>
-                        <div class="w-full bg-black/20 h-2 rounded-full overflow-hidden">
-                            <div class="bg-white h-full transition-all duration-1000" style="width: ${progress}%"></div>
+                        <div class="w-full bg-black/20 h-2.5 rounded-full overflow-hidden">
+                            <div class="bg-white h-full progress-transition" style="width: ${progress}%"></div>
                         </div>
                     </div>
                 </header>
 
                 <main class="p-5 space-y-4">
-                    <div onclick="window.toggleTask('challenge')" class="p-5 rounded-3xl border-2 cursor-pointer transition-all ${dailyLog.challenge ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-orange-50 border-orange-200 text-orange-950'}">
+                    <!-- Reto -->
+                    <div onclick="toggleTask('challenge')" class="p-5 rounded-3xl border-2 transition-all cursor-pointer tap-scale ${currentLog.challenge ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-orange-50 border-orange-200 text-orange-900'}">
                         <div class="flex items-center justify-between">
                             <div class="flex gap-4">
-                                <i data-lucide="award" class="${dailyLog.challenge ? 'text-white' : 'text-orange-600'}"></i>
+                                <i data-lucide="award" class="${currentLog.challenge ? 'text-white' : 'text-orange-600'}"></i>
                                 <div>
                                     <p class="text-[10px] font-black uppercase opacity-70">Reto del día</p>
                                     <h3 class="font-bold">${data.challenge}</h3>
                                 </div>
                             </div>
-                            ${dailyLog.challenge ? '<i data-lucide="check-circle-2"></i>' : ''}
+                            ${currentLog.challenge ? '<i data-lucide="check-circle-2"></i>' : ''}
                         </div>
                     </div>
 
-                    <h2 class="text-lg font-black text-slate-800 px-1">ACCIONES</h2>
+                    <h2 class="text-lg font-black text-slate-800 px-1">TU RUTINA</h2>
 
                     <div class="space-y-3">
-                        ${renderActionCard('ritual', 'Ritual Matutino', data.ritual, 'sun', 'text-amber-500')}
-                        ${renderActionCard('breakfast', 'Desayuno Saludable', data.breakfast, 'coffee', 'text-blue-500')}
-                        ${renderActionCard('lunch', 'Almuerzo Anti-LDL', data.lunch, 'utensils', 'text-emerald-500')}
-                        ${renderActionCard('exercise', 'Ejercicio Diario', data.exercise, 'activity', 'text-indigo-500')}
-                        ${renderActionCard('dinner', 'Cena Ligera', data.dinner, 'moon', 'text-purple-500')}
-                    </div>
-
-                    <div class="bg-white border rounded-3xl p-6 mt-6">
-                        <div class="flex items-center gap-2 text-emerald-600 mb-2 font-bold text-sm">
-                            <i data-lucide="info" class="w-4 h-4"></i> EDUCACIÓN
-                        </div>
-                        <p class="text-xs text-slate-500 leading-relaxed font-medium">${data.edu}</p>
+                        ${renderActionCard('ritual', 'Ritual', data.ritual, 'sun', 'text-amber-500', currentLog.ritual)}
+                        ${renderActionCard('breakfast', 'Desayuno', data.breakfast, 'coffee', 'text-blue-500', currentLog.breakfast)}
+                        ${renderActionCard('lunch', 'Almuerzo', data.lunch, 'utensils', 'text-emerald-500', currentLog.lunch)}
+                        ${renderActionCard('exercise', 'Ejercicio', data.exercise, 'activity', 'text-indigo-500', currentLog.exercise)}
+                        ${renderActionCard('dinner', 'Cena', data.dinner, 'moon', 'text-purple-500', currentLog.dinner)}
                     </div>
                 </main>
 
-                <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/90 backdrop-blur-md border-t h-20 flex justify-around items-center px-4 z-50">
+                <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t h-20 flex justify-around items-center px-4 z-50">
                     <button class="flex flex-col items-center gap-1 text-emerald-600">
-                        <i data-lucide="home"></i><span class="text-[10px] font-black">HOY</span>
+                        <i data-lucide="heart"></i><span class="text-[10px] font-bold">HOY</span>
                     </button>
-                    <button onclick="alert('Funcionalidad próximamente')" class="flex flex-col items-center gap-1 text-slate-400">
-                        <i data-lucide="apple"></i><span class="text-[10px] font-black">DIETA</span>
+                    <button onclick="alert('Día 1: Avena y Lentejas. Día 2: Salmón y Yogur.')" class="flex flex-col items-center gap-1 text-slate-400">
+                        <i data-lucide="apple"></i><span class="text-[10px] font-bold">DIETA</span>
                     </button>
-                    <button onclick="alert('Funcionalidad próximamente')" class="flex flex-col items-center gap-1 text-slate-400">
-                        <i data-lucide="shopping-cart"></i><span class="text-[10px] font-black">TIENDA</span>
-                    </button>
-                    <button onclick="alert('Funcionalidad próximamente')" class="flex flex-col items-center gap-1 text-slate-400">
-                        <i data-lucide="trending-up"></i><span class="text-[10px] font-black">METAS</span>
+                    <button onclick="alert('Próximamente')" class="flex flex-col items-center gap-1 text-slate-400">
+                        <i data-lucide="trending-up"></i><span class="text-[10px] font-bold">METAS</span>
                     </button>
                 </nav>
             `;
             lucide.createIcons();
         }
 
-        function renderActionCard(key, title, label, icon, iconColor) {
-            const isDone = dailyLog[key];
+        function renderActionCard(key, title, label, icon, colorClass, isDone) {
             return `
-                <div onclick="window.toggleTask('${key}')" class="action-card p-4 rounded-2xl border-2 flex items-center gap-4 transition-all ${isDone ? 'bg-slate-50 border-slate-100 opacity-60' : 'bg-white border-white shadow-sm'}">
+                <div onclick="toggleTask('${key}')" class="tap-scale p-4 rounded-2xl border-2 flex items-center gap-4 transition-all ${isDone ? 'bg-slate-50 border-slate-100 opacity-60' : 'bg-white border-white shadow-sm'}">
                     <div class="p-3 rounded-xl bg-slate-50 border">
-                        ${isDone ? `<i data-lucide="check" class="text-emerald-600"></i>` : `<i data-lucide="${icon}" class="${iconColor}"></i>`}
+                        <i data-lucide="${isDone ? 'check' : icon}" class="${isDone ? 'text-emerald-600' : colorClass}"></i>
                     </div>
                     <div class="flex-1">
                         <p class="text-[10px] font-black uppercase text-slate-400">${title}</p>
                         <h3 class="font-bold text-slate-800 ${isDone ? 'line-through' : ''}">${label}</h3>
                     </div>
-                    <i data-lucide="chevron-right" class="text-slate-300 w-5 h-5"></i>
+                    <i data-lucide="chevron-right" class="text-slate-300 w-4 h-4"></i>
                 </div>
             `;
         }
 
-        // --- ACCIONES GLOBALES ---
+        function renderOnboarding(app) {
+            app.innerHTML = `
+                <div class="p-8 flex flex-col justify-center min-h-screen">
+                    <div class="text-center mb-10">
+                        <div class="bg-emerald-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                            <i data-lucide="heart" class="text-emerald-600 fill-emerald-600 w-12 h-12"></i>
+                        </div>
+                        <h1 class="text-4xl font-black text-slate-800 tracking-tight">VITALIA</h1>
+                        <p class="text-slate-500 mt-2 font-medium">Reduce el colesterol de forma natural.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-[2.5rem] border shadow-xl space-y-6">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">¿Cómo te llamas?</label>
+                            <input type="text" id="nameInput" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-emerald-500 outline-none transition-all" placeholder="Juan Pérez">
+                        </div>
+                        <button onclick="startApp()" class="w-full py-5 bg-emerald-600 text-white rounded-2xl font-black text-lg shadow-xl tap-scale transition-all">
+                            EMPEZAR DÍA 1
+                        </button>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
 
-        window.toggleTask = async (key) => {
-            if (!currentUser || !dailyLog) return;
-            const todayId = new Date().toISOString().split('T')[0];
-            const logRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'dailyLogs', todayId);
-            const newValue = !dailyLog[key];
+        // --- ACCIONES ---
+        window.startApp = () => {
+            const name = document.getElementById('nameInput').value;
+            if (!name) return alert("Por favor, ingresa tu nombre");
             
-            // UI Optimista
-            dailyLog[key] = newValue;
-            renderDashboard();
-
-            // Persistencia
-            await updateDoc(logRef, { [key]: newValue });
+            state.profile = {
+                name: name,
+                startDate: new Date().toISOString(),
+                streak: 1
+            };
+            saveState();
+            render();
         };
 
-        // Iniciar App
-        init();
+        window.toggleTask = (key) => {
+            const todayId = getTodayId();
+            state.logs[todayId][key] = !state.logs[todayId][key];
+            saveState();
+            render();
+        };
 
+        // Iniciar
+        render();
     </script>
 </body>
 </html>
-
 
