@@ -3,66 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitalia - Tu Corazón en Control</title>
-    <!-- Tailwind CSS para diseño profesional -->
+    <title>Vitalia - Programa de 15 Días</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Iconos Lucide -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         .progress-transition { transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
         .tap-scale:active { transform: scale(0.97); }
+        .hide-scroll::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
 
-    <div id="app" class="max-w-md mx-auto min-h-screen bg-white shadow-2xl relative pb-24">
+    <div id="app" class="max-w-md mx-auto min-h-screen bg-white shadow-2xl relative pb-24 overflow-x-hidden">
         <!-- El contenido se genera dinámicamente aquí -->
     </div>
 
     <script>
-        // --- BASE DE DATOS DE SALUD (DÍAS REALES) ---
+        // --- PROGRAMA DE 15 DÍAS REALES ---
+        // Cada día tiene una configuración única de salud
         const PROGRAM = {
             1: {
                 title: "Despertar Metabólico",
-                ritual: "Agua tibia con medio limón",
-                ritualDesc: "Estimula la bilis para movilizar grasas hepáticas.",
-                breakfast: "Avena integral con Canela",
-                lunch: "Lentejas con Pimientos",
-                dinner: "Sopa de Apio y Calabacín",
-                exercise: "Caminata Moderada (25 min)",
+                ritual: "Agua tibia con limón",
+                meals: {
+                    breakfast: { name: "Avena con Canela", benefit: "Fibra para atrapar LDL." },
+                    lunch: { name: "Lentejas con Pimientos", benefit: "Proteína vegetal y fibra." },
+                    dinner: { name: "Sopa de Apio", benefit: "Depuración hepática." }
+                },
+                exercise: { name: "Caminata Moderada", dur: "25 min" },
                 challenge: "Cero Azúcar Hoy",
-                edu: "Hoy tu cuerpo empieza a usar el colesterol almacenado para producir energía."
+                edu: "Hoy inicias el proceso de limpieza de tus arterias."
             },
             2: {
                 title: "Limpieza Arterial",
-                ritual: "Té verde (sin azúcar)",
-                ritualDesc: "Antioxidantes que protegen tus arterias.",
-                breakfast: "Yogur con semillas de Chía",
-                lunch: "Salmón o Trucha a la plancha",
-                dinner: "Tortilla de claras con Espinacas",
-                exercise: "Subir Escaleras (10 min)",
+                ritual: "Té verde",
+                meals: {
+                    breakfast: { name: "Yogur con Chía", benefit: "Omega-3 para el perfil lipídico." },
+                    lunch: { name: "Salmón a la plancha", benefit: "Grasas que barren el LDL." },
+                    dinner: { name: "Tortilla de Espinacas", benefit: "Hierro y ligereza." }
+                },
+                exercise: { name: "Subir Escaleras", dur: "10 min" },
                 challenge: "8 Vasos de Agua",
-                edu: "La hidratación es clave para que tus riñones filtren el exceso de toxinas."
+                edu: "El agua es el vehículo para eliminar toxinas sanguíneas."
             },
             3: {
                 title: "Poder del Omega-3",
                 ritual: "Infusión de Jengibre",
-                ritualDesc: "Reduce la inflamación sistémica.",
-                breakfast: "Tostada integral con Aguacate",
-                lunch: "Atún con ensalada verde",
-                dinner: "Crema de Verduras",
-                exercise: "Caminata Rápida (30 min)",
+                meals: {
+                    breakfast: { name: "Tostada con Aguacate", benefit: "Grasas monoinsaturadas." },
+                    lunch: { name: "Atún con Garbanzos", benefit: "Fibra y proteína magra." },
+                    dinner: { name: "Crema de Zanahoria", benefit: "Antioxidantes cardiacos." }
+                },
+                exercise: { name: "Caminata Rápida", dur: "30 min" },
                 challenge: "Cero Frituras",
-                edu: "Las grasas buenas (insaturadas) barren el colesterol pegado en las paredes."
+                edu: "Las grasas buenas desplazan a las grasas saturadas."
+            },
+            4: {
+                title: "Fibra al Máximo",
+                ritual: "Vinagre de Manzana",
+                meals: {
+                    breakfast: { name: "Batido Verde", benefit: "Fibra líquida depurativa." },
+                    lunch: { name: "Quinoa con Vegetales", benefit: "Bajo índice glucémico." },
+                    dinner: { name: "Pollo con Brócoli", benefit: "Cromo para el metabolismo." }
+                },
+                exercise: { name: "Trote Suave", dur: "20 min" },
+                challenge: "Snack de Fruta",
+                edu: "La fibra soluble es una esponja para el colesterol."
+            },
+            5: {
+                title: "Arterias Flexibles",
+                ritual: "Té de Cúrcuma",
+                meals: {
+                    breakfast: { name: "Pan de Centeno", benefit: "Fibra de absorción lenta." },
+                    lunch: { name: "Frijoles con Arroz", benefit: "Aminoácidos esenciales." },
+                    dinner: { name: "Pescado al Vapor", benefit: "Digestión rápida." }
+                },
+                exercise: { name: "Caminata Intensa", dur: "35 min" },
+                challenge: "Cero Sal",
+                edu: "Menos sal reduce la presión sobre tus arterias."
+            },
+            6: {
+                title: "Día de Reparación",
+                ritual: "Té de Hibisco",
+                meals: {
+                    breakfast: { name: "Avena con Plátano", benefit: "Potasio para el corazón." },
+                    lunch: { name: "Pavo con Ensalada", benefit: "Proteína muy magra." },
+                    dinner: { name: "Sopa de Miso", benefit: "Probióticos saludables." }
+                },
+                exercise: { name: "Estiramientos", dur: "20 min" },
+                challenge: "Dormir 8 Horas",
+                edu: "El descanso permite al hígado procesar grasas."
+            },
+            7: {
+                title: "Reinicio Semanal",
+                ritual: "Agua con Limón",
+                meals: {
+                    breakfast: { name: "Avena con Nueces", benefit: "Protección neuronal y cardiaca." },
+                    lunch: { name: "Tofu con Vegetales", benefit: "Nutrición 100% vegetal." },
+                    dinner: { name: "Ensalada Grande", benefit: "Cierre ligero de ciclo." }
+                },
+                exercise: { name: "Caminata Larga", dur: "45 min" },
+                challenge: "Planear Semana 2",
+                edu: "Has completado la primera fase de limpieza."
+            },
+            8: {
+                title: "Potasio Vital",
+                ritual: "Té de Manzanilla",
+                meals: {
+                    breakfast: { name: "Smoothie de Banano", benefit: "Regulación de presión arterial." },
+                    lunch: { name: "Berenjenas al horno", benefit: "Bajas calorías, mucha fibra." },
+                    dinner: { name: "Hummus con Apio", benefit: "Grasas de alta calidad." }
+                },
+                exercise: { name: "Caminata con Ritmo", dur: "30 min" },
+                challenge: "Sin Cafeína",
+                edu: "El potasio ayuda a expulsar el exceso de sodio."
+            },
+            9: {
+                title: "Magnesio para el Corazón",
+                ritual: "Agua con Chía",
+                meals: {
+                    breakfast: { name: "Nueces y Almendras", benefit: "Magnesio para el ritmo cardiaco." },
+                    lunch: { name: "Pechuga con Espárragos", benefit: "Diurético natural." },
+                    dinner: { name: "Sopa de Tomate", benefit: "Licopeno protector." }
+                },
+                exercise: { name: "Bicicleta", dur: "25 min" },
+                challenge: "Cero Pan Blanco",
+                edu: "El magnesio relaja los vasos sanguíneos."
+            },
+            10: {
+                title: "Día Probiótico",
+                ritual: "Kéfir o Yogur",
+                meals: {
+                    breakfast: { name: "Frutos Rojos", benefit: "Antioxidantes potentes." },
+                    lunch: { name: "Sardinas con Ensalada", benefit: "Máximo Omega-3." },
+                    dinner: { name: "Caldo de Huesos/Verdura", benefit: "Mineralización profunda." }
+                },
+                exercise: { name: "Subir Escaleras", dur: "15 min" },
+                challenge: "Cero Embutidos",
+                edu: "Una microbiota sana ayuda a procesar el colesterol."
+            },
+            11: {
+                title: "Antioxidantes Oro",
+                ritual: "Té Blanco",
+                meals: {
+                    breakfast: { name: "Kiwi y Avena", benefit: "Vitamina C y fibra." },
+                    lunch: { name: "Garbanzos con Cúrcuma", benefit: "Poder antiinflamatorio." },
+                    dinner: { name: "Pescado con Calabaza", benefit: "Betacarotenos." }
+                },
+                exercise: { name: "Trote Intervalado", dur: "20 min" },
+                challenge: "Hoy Cero Alcohol",
+                edu: "Los antioxidantes evitan que el LDL se oxide en tus arterias."
+            },
+            12: {
+                title: "Fuerza Vegetal",
+                ritual: "Infusión de Menta",
+                meals: {
+                    breakfast: { name: "Papaya con Semillas", benefit: "Enzimas digestivas." },
+                    lunch: { name: "Hamburguesa de Lenteja", benefit: "Hierro sin grasa animal." },
+                    dinner: { name: "Champiñones Salteados", benefit: "Beta-glucanos fúngicos." }
+                },
+                exercise: { name: "Caminata de Montaña", dur: "40 min" },
+                challenge: "Sin Carnes Rojas",
+                edu: "Las legumbres son el sustituto ideal para cuidar tu LDL."
+            },
+            13: {
+                title: "Grasas de Vida",
+                ritual: "Agua con Pepino",
+                meals: {
+                    breakfast: { name: "Huevo pasado por agua", benefit: "Lecitina natural." },
+                    lunch: { name: "Bacalao con Judías", benefit: "Proteína de mar limpia." },
+                    dinner: { name: "Puré de Guisantes", benefit: "Proteína vegetal ligera." }
+                },
+                exercise: { name: "Caminata Rápida", dur: "35 min" },
+                challenge: "Sin Azúcar en Café/Té",
+                edu: "La lecitina ayuda a emulsionar las grasas en sangre."
+            },
+            14: {
+                title: "Máxima Intensidad",
+                ritual: "Té Verde Fuerte",
+                meals: {
+                    breakfast: { name: "Manzana con Mantequilla de Maní", benefit: "Saciante y saludable." },
+                    lunch: { name: "Pollo al Curry", benefit: "Aceleración metabólica." },
+                    dinner: { name: "Revuelto de Espárragos", benefit: "Cena minimalista." }
+                },
+                exercise: { name: "Ejercicio HIIT", dur: "15 min" },
+                challenge: "Cero Harinas",
+                edu: "El ejercicio intenso obliga al cuerpo a quemar triglicéridos."
+            },
+            15: {
+                title: "Victoria Vital",
+                ritual: "Agua con Limón",
+                meals: {
+                    breakfast: { name: "Elige tu favorita", benefit: "Consolidación de hábito." },
+                    lunch: { name: "Almuerzo de Celebración", benefit: "Equilibrio y salud." },
+                    dinner: { name: "Cena Consciente", benefit: "Paz digestiva." }
+                },
+                exercise: { name: "Caminata de Meditación", dur: "50 min" },
+                challenge: "Repetir Programa",
+                edu: "Has completado 15 días. Tus arterias y tu corazón son otros."
             }
         };
 
-        // --- GESTIÓN DE DATOS ---
-        const state = {
+        // --- LÓGICA DE ESTADO ---
+        let state = {
             profile: JSON.parse(localStorage.getItem('vitalia_profile')) || null,
-            logs: JSON.parse(localStorage.getItem('vitalia_logs')) || {}
+            logs: JSON.parse(localStorage.getItem('vitalia_logs')) || {},
+            currentView: 'home'
         };
 
         function saveState() {
@@ -79,20 +227,17 @@
             const start = new Date(state.profile.startDate);
             const now = new Date();
             const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
-            return diff > 0 ? diff : 1;
+            // Si pasa de 15 días, reinicia el ciclo o se queda en 15
+            return diff > 0 ? (diff <= 15 ? diff : (diff % 15 || 15)) : 1;
         }
 
-        // --- COMPONENTES DE INTERFAZ ---
+        // --- RENDERIZADO ---
         function render() {
             const app = document.getElementById('app');
-            
-            if (!state.profile) {
-                renderOnboarding(app);
-                return;
-            }
+            if (!state.profile) { renderOnboarding(app); return; }
 
             const dayNum = getDayNumber();
-            const data = PROGRAM[dayNum] || PROGRAM[3]; // Fallback al día 3
+            const data = PROGRAM[dayNum];
             const todayId = getTodayId();
             
             if (!state.logs[todayId]) {
@@ -101,6 +246,15 @@
             }
 
             const currentLog = state.logs[todayId];
+
+            if (state.currentView === 'home') renderHome(app, data, currentLog, dayNum);
+            else if (state.currentView === 'diet') renderDiet(app, data, currentLog, dayNum);
+            else if (state.currentView === 'stats') renderStats(app);
+
+            lucide.createIcons();
+        }
+
+        function renderHome(app, data, currentLog, dayNum) {
             const completed = Object.values(currentLog).filter(v => v).length;
             const progress = Math.round((completed / 6) * 100);
 
@@ -108,10 +262,10 @@
                 <header class="bg-emerald-600 p-6 text-white rounded-b-[2.5rem] shadow-xl">
                     <div class="flex justify-between items-center mb-6">
                         <div>
-                            <p class="text-emerald-100 text-xs font-bold uppercase tracking-widest">Día ${dayNum} de tu Plan</p>
+                            <p class="text-emerald-100 text-xs font-bold uppercase tracking-widest">Día ${dayNum} • ${state.profile.name}</p>
                             <h1 class="text-2xl font-extrabold">${data.title}</h1>
                         </div>
-                        <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full backdrop-blur-md">
+                        <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full">
                             <i data-lucide="flame" class="w-4 h-4 text-orange-400 fill-orange-400"></i>
                             <span class="font-bold text-sm">${state.profile.streak || 1} d</span>
                         </div>
@@ -128,107 +282,138 @@
                 </header>
 
                 <main class="p-5 space-y-4">
-                    <!-- Reto -->
                     <div onclick="toggleTask('challenge')" class="p-5 rounded-3xl border-2 transition-all cursor-pointer tap-scale ${currentLog.challenge ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-orange-50 border-orange-200 text-orange-900'}">
                         <div class="flex items-center justify-between">
                             <div class="flex gap-4">
                                 <i data-lucide="award" class="${currentLog.challenge ? 'text-white' : 'text-orange-600'}"></i>
-                                <div>
-                                    <p class="text-[10px] font-black uppercase opacity-70">Reto del día</p>
-                                    <h3 class="font-bold">${data.challenge}</h3>
-                                </div>
+                                <div><p class="text-[10px] font-black uppercase opacity-70">Desafío</p><h3 class="font-bold">${data.challenge}</h3></div>
                             </div>
                             ${currentLog.challenge ? '<i data-lucide="check-circle-2"></i>' : ''}
                         </div>
                     </div>
 
-                    <h2 class="text-lg font-black text-slate-800 px-1">TU RUTINA</h2>
-
+                    <h2 class="text-lg font-black text-slate-800 px-1 uppercase text-xs tracking-widest">Rutina de Hoy</h2>
                     <div class="space-y-3">
                         ${renderActionCard('ritual', 'Ritual', data.ritual, 'sun', 'text-amber-500', currentLog.ritual)}
-                        ${renderActionCard('breakfast', 'Desayuno', data.breakfast, 'coffee', 'text-blue-500', currentLog.breakfast)}
-                        ${renderActionCard('lunch', 'Almuerzo', data.lunch, 'utensils', 'text-emerald-500', currentLog.lunch)}
-                        ${renderActionCard('exercise', 'Ejercicio', data.exercise, 'activity', 'text-indigo-500', currentLog.exercise)}
-                        ${renderActionCard('dinner', 'Cena', data.dinner, 'moon', 'text-purple-500', currentLog.dinner)}
+                        ${renderActionCard('breakfast', 'Desayuno', data.meals.breakfast.name, 'coffee', 'text-blue-500', currentLog.breakfast)}
+                        ${renderActionCard('lunch', 'Almuerzo', data.meals.lunch.name, 'utensils', 'text-emerald-500', currentLog.lunch)}
+                        ${renderActionCard('exercise', 'Ejercicio', data.exercise.name, 'activity', 'text-indigo-500', currentLog.exercise)}
+                        ${renderActionCard('dinner', 'Cena', data.meals.dinner.name, 'moon', 'text-purple-500', currentLog.dinner)}
                     </div>
                 </main>
-
-                <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t h-20 flex justify-around items-center px-4 z-50">
-                    <button class="flex flex-col items-center gap-1 text-emerald-600">
-                        <i data-lucide="heart"></i><span class="text-[10px] font-bold">HOY</span>
-                    </button>
-                    <button onclick="alert('Día 1: Avena y Lentejas. Día 2: Salmón y Yogur.')" class="flex flex-col items-center gap-1 text-slate-400">
-                        <i data-lucide="apple"></i><span class="text-[10px] font-bold">DIETA</span>
-                    </button>
-                    <button onclick="alert('Próximamente')" class="flex flex-col items-center gap-1 text-slate-400">
-                        <i data-lucide="trending-up"></i><span class="text-[10px] font-bold">METAS</span>
-                    </button>
-                </nav>
+                ${renderNav('home')}
             `;
-            lucide.createIcons();
         }
 
-        function renderActionCard(key, title, label, icon, colorClass, isDone) {
-            return `
-                <div onclick="toggleTask('${key}')" class="tap-scale p-4 rounded-2xl border-2 flex items-center gap-4 transition-all ${isDone ? 'bg-slate-50 border-slate-100 opacity-60' : 'bg-white border-white shadow-sm'}">
-                    <div class="p-3 rounded-xl bg-slate-50 border">
-                        <i data-lucide="${isDone ? 'check' : icon}" class="${isDone ? 'text-emerald-600' : colorClass}"></i>
+        function renderDiet(app, data, currentLog, dayNum) {
+            app.innerHTML = `
+                <div class="p-6">
+                    <h1 class="text-3xl font-black text-slate-800 mb-2">Menú Día ${dayNum}</h1>
+                    <p class="text-slate-500 mb-6 italic text-sm">Nutrición clínica para el corazón.</p>
+                    <div class="space-y-6">
+                        ${renderMealDetail('Desayuno', data.meals.breakfast, 'coffee', 'text-blue-500')}
+                        ${renderMealDetail('Almuerzo', data.meals.lunch, 'utensils', 'text-emerald-500')}
+                        ${renderMealDetail('Cena', data.meals.dinner, 'moon', 'text-purple-500')}
                     </div>
-                    <div class="flex-1">
-                        <p class="text-[10px] font-black uppercase text-slate-400">${title}</p>
-                        <h3 class="font-bold text-slate-800 ${isDone ? 'line-through' : ''}">${label}</h3>
+                    <div class="mt-8 bg-emerald-50 p-6 rounded-[2rem] border border-emerald-100">
+                        <h3 class="font-bold text-emerald-800 mb-2">Sabiduría Vital</h3>
+                        <p class="text-sm text-emerald-700">${data.edu}</p>
                     </div>
-                    <i data-lucide="chevron-right" class="text-slate-300 w-4 h-4"></i>
                 </div>
+                ${renderNav('diet')}
             `;
+        }
+
+        function renderStats(app) {
+            const allLogs = Object.values(state.logs);
+            const totalTasks = allLogs.length * 6;
+            const totalDone = allLogs.reduce((acc, log) => acc + Object.values(log).filter(v => v).length, 0);
+            const totalPercent = totalTasks > 0 ? Math.round((totalDone / totalTasks) * 100) : 0;
+
+            app.innerHTML = `
+                <div class="p-6">
+                    <h1 class="text-3xl font-black text-slate-800 mb-6">Tu Victoria</h1>
+                    <div class="grid grid-cols-2 gap-4 mb-8">
+                        <div class="bg-emerald-600 p-6 rounded-[2.5rem] text-white">
+                            <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest">Global</p>
+                            <h2 class="text-3xl font-black">${totalPercent}%</h2>
+                        </div>
+                        <div class="bg-slate-900 p-6 rounded-[2.5rem] text-white">
+                            <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest">Racha</p>
+                            <h2 class="text-3xl font-black">${state.profile.streak} d</h2>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-slate-800 mb-4 px-1 uppercase text-xs tracking-widest">Semana Actual</h3>
+                    <div class="bg-white border-2 border-slate-100 rounded-[2.5rem] p-6 mb-8 flex justify-between items-end h-32 gap-2">
+                        ${[...Array(7)].map((_, i) => {
+                            const d = new Date(); d.setDate(d.getDate() - (6 - i));
+                            const id = d.toISOString().split('T')[0];
+                            const log = state.logs[id] || {};
+                            const count = Object.values(log).filter(v => v).length;
+                            return `<div class="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+                                <div class="w-full bg-emerald-500 rounded-t-xl transition-all" style="height: ${(count/6)*100}%"></div>
+                                <span class="text-[10px] font-black text-slate-400 uppercase">${['D','L','M','X','J','V','S'][d.getDay()]}</span>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                    <button onclick="resetApp()" class="w-full py-4 text-red-400 text-xs font-bold uppercase tracking-widest">Reiniciar todo el programa</button>
+                </div>
+                ${renderNav('stats')}
+            `;
+        }
+
+        // --- UTILIDADES ---
+        function renderActionCard(key, title, label, icon, colorClass, isDone) {
+            return `<div onclick="toggleTask('${key}')" class="tap-scale p-4 rounded-2xl border-2 flex items-center gap-4 transition-all ${isDone ? 'bg-slate-50 border-slate-100 opacity-60' : 'bg-white border-white shadow-sm'}">
+                <div class="p-3 rounded-xl bg-slate-50 border"><i data-lucide="${isDone ? 'check' : icon}" class="${isDone ? 'text-emerald-600' : colorClass}"></i></div>
+                <div class="flex-1"><p class="text-[10px] font-black uppercase text-slate-400">${title}</p><h3 class="font-bold text-slate-800 ${isDone ? 'line-through' : ''}">${label}</h3></div>
+                <i data-lucide="chevron-right" class="text-slate-300 w-4 h-4"></i>
+            </div>`;
+        }
+
+        function renderMealDetail(title, meal, icon, color) {
+            return `<div class="flex gap-4"><div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center border shrink-0"><i data-lucide="${icon}" class="${color}"></i></div>
+            <div><h4 class="font-black text-slate-400 text-[10px] uppercase tracking-widest">${title}</h4><h3 class="font-bold text-slate-800 text-lg">${meal.name}</h3><p class="text-sm text-slate-500 mt-1">${meal.benefit}</p></div></div>`;
+        }
+
+        function renderNav(active) {
+            return `<nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t h-20 flex justify-around items-center px-4 z-50">
+                <button onclick="changeView('home')" class="flex flex-col items-center gap-1 ${active === 'home' ? 'text-emerald-600' : 'text-slate-400'}"><i data-lucide="home"></i><span class="text-[10px] font-black uppercase">Hoy</span></button>
+                <button onclick="changeView('diet')" class="flex flex-col items-center gap-1 ${active === 'diet' ? 'text-emerald-600' : 'text-slate-400'}"><i data-lucide="apple"></i><span class="text-[10px] font-black uppercase">Dieta</span></button>
+                <button onclick="changeView('stats')" class="flex flex-col items-center gap-1 ${active === 'stats' ? 'text-emerald-600' : 'text-slate-400'}"><i data-lucide="trending-up"></i><span class="text-[10px] font-black uppercase">Metas</span></button>
+            </nav>`;
         }
 
         function renderOnboarding(app) {
-            app.innerHTML = `
-                <div class="p-8 flex flex-col justify-center min-h-screen">
-                    <div class="text-center mb-10">
-                        <div class="bg-emerald-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-                            <i data-lucide="heart" class="text-emerald-600 fill-emerald-600 w-12 h-12"></i>
-                        </div>
-                        <h1 class="text-4xl font-black text-slate-800 tracking-tight">VITALIA</h1>
-                        <p class="text-slate-500 mt-2 font-medium">Reduce el colesterol de forma natural.</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-[2.5rem] border shadow-xl space-y-6">
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">¿Cómo te llamas?</label>
-                            <input type="text" id="nameInput" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-emerald-500 outline-none transition-all" placeholder="Juan Pérez">
-                        </div>
-                        <button onclick="startApp()" class="w-full py-5 bg-emerald-600 text-white rounded-2xl font-black text-lg shadow-xl tap-scale transition-all">
-                            EMPEZAR DÍA 1
-                        </button>
-                    </div>
+            app.innerHTML = `<div class="p-8 flex flex-col justify-center min-h-screen text-center">
+                <div class="bg-emerald-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6"><i data-lucide="heart" class="text-emerald-600 fill-emerald-600 w-12 h-12"></i></div>
+                <h1 class="text-4xl font-black text-slate-800 tracking-tight">VITALIA</h1>
+                <p class="text-slate-500 mt-2 mb-10">Tu plan personal de 15 días.</p>
+                <div class="bg-white p-6 rounded-[2.5rem] border shadow-xl space-y-6">
+                    <input type="text" id="nameInput" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-emerald-500 outline-none transition-all" placeholder="Escribe tu nombre">
+                    <button onclick="startApp()" class="w-full py-5 bg-emerald-600 text-white rounded-2xl font-black text-lg shadow-xl tap-scale transition-all uppercase">EMPEZAR MI DÍA 1</button>
                 </div>
-            `;
+            </div>`;
             lucide.createIcons();
         }
 
-        // --- ACCIONES ---
+        // --- FUNCIONES GLOBALES ---
+        window.changeView = (v) => { state.currentView = v; render(); window.scrollTo(0,0); };
         window.startApp = () => {
-            const name = document.getElementById('nameInput').value;
-            if (!name) return alert("Por favor, ingresa tu nombre");
-            
-            state.profile = {
-                name: name,
-                startDate: new Date().toISOString(),
-                streak: 1
-            };
-            saveState();
-            render();
+            const n = document.getElementById('nameInput').value; if (!n) return;
+            state.profile = { name: n, startDate: new Date().toISOString(), streak: 1 };
+            saveState(); render();
+        };
+        window.toggleTask = (k) => {
+            const tid = getTodayId(); state.logs[tid][k] = !state.logs[tid][k];
+            saveState(); render();
+        };
+        window.resetApp = () => {
+            if(confirm("¿Seguro? Se borrará todo tu progreso de los 15 días.")) {
+                localStorage.clear(); location.reload();
+            }
         };
 
-        window.toggleTask = (key) => {
-            const todayId = getTodayId();
-            state.logs[todayId][key] = !state.logs[todayId][key];
-            saveState();
-            render();
-        };
-
-        // Iniciar
         render();
     </script>
 </body>
